@@ -11,7 +11,7 @@ Use C++11 range for-loop to enumerate registry keys/values, folder and WMI queri
 EnumRegistryKey enumRegistryKey(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft");
 for (auto const& szKey : enumRegistryKey)
 {
-    _tprintf(TEXT("%s\n"), szKey.c_str());
+    std::wcout << szKey << L"\n";
 }
 ```
 ## Enumerate Registry Values Example
@@ -22,7 +22,7 @@ for (auto const& szKey : enumRegistryKey)
 EnumRegistryValue enumRegistryValue(HKEY_CURRENT_USER, L"Software\\7-Zip\\Compression");
 for (auto const& szValueName : enumRegistryValue)
 {
-    _tprintf(TEXT("%s\n"), szValueName.c_str());
+    std::wcout << szValueName << L"\n";
 }
 ```
 ## Enumerate Folder Example
@@ -37,14 +37,14 @@ for (auto const& ffd : enumFolder)
 {
     if (IsFolder(ffd))
     {
-        _tprintf(TEXT("  %s   <DIR>\n"), ffd.cFileName);
+        std::wcout << L"  " << ffd.cFileName << "   <DIR>\n";
     }
     else
     {
         LARGE_INTEGER filesize;
         filesize.LowPart = ffd.nFileSizeLow;
         filesize.HighPart = ffd.nFileSizeHigh;
-        _tprintf(TEXT("  %s   %ld bytes\n"), ffd.cFileName, filesize.QuadPart);
+        std::wcout << L"  " << ffd.cFileName << "   " << filesize.QuadPart << L" bytes\n";
     }
 }
 ```
