@@ -6,18 +6,18 @@
 
 int main()
 {
-	if (!InitializeCOM())
-	{
-		std::cout << "InitializeCOM() fails! Program exits.\n";
-		return 1;
-	}
-	EnumWmi enumWmi(L"SELECT * FROM Win32_Processor");
-	for (const auto& processor : enumWmi)
-	{
-		_bstr_t str = processor[L"Name"].bstrVal;
-		std::cout << "Processor name: " << str << std::endl;
-	}
+    if (!InitializeCOM())
+    {
+        std::cout << "InitializeCOM() fails! Program exits.\n";
+        return 1;
+    }
+    EnumWmi enumWmi(L"SELECT * FROM Win32_Processor");
+    for (const auto& processor : enumWmi)
+    {
+        _bstr_t str = processor[L"Name"].bstrVal;
+        std::cout << "Processor name: " << str << std::endl;
+    }
 
     std::cout << "Done!\n";
-	return 0;
+    return 0;
 }
