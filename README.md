@@ -54,7 +54,7 @@ for (auto const& ffd : enumFolder)
 
 if (!InitializeCOM())
 {
-    std::cout << "InitializeCOM() fails! Program exits.\n";
+    std::cerr << "InitializeCOM() fails! Program exits.\n";
     return 1;
 }
 {
