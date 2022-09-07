@@ -1,13 +1,13 @@
 # Windows Registry Folder and WMI Query Enumerator
-Use C++11 range for-loop to enumerate registry keys/values, folder and WMI queries based on Marius Bancila's article: [Enabling MFC Collections to Work in Range-based for Loops](https://www.codeproject.com/Articles/835025/Enabling-MFC-Collections-to-Work-in-Range-based-fo). Marius enables range-based for-loop for MFC collections whereas this library applies his concept to non-collections to enumerate registry, folder and WMI queries with RAII. This is a header-only library.
+Use C++11 range for-loop to enumerate Windows registry keys/values, folder and WMI queries based on Marius Bancila's article: [Enabling MFC Collections to Work in Range-based for Loops](https://www.codeproject.com/Articles/835025/Enabling-MFC-Collections-to-Work-in-Range-based-fo). Marius enables range-based for-loop for MFC collections whereas this library applies his concept to non-collections to enumerate registry, folder and WMI queries with RAII. This is a header-only library.
 
 __Pros__
-* Resource management is accomplished with RAII: handles and resource are released in the Enumerator's destructor
+* Resource management is accomplished with RAII: handles and resource are released in the Enumerator's destructor.
 * The Windows API usage details is abstracted away from the user.
-* Less boilerplate code to be written and just focus on your business logic
+* Less boilerplate code to be written and just focus on your business logic.
 
 __Cons__
-* Iterators produced by the Enumerator cannot be used in STL algorithms because the underlying enumerated object is not a collection
+* Iterators produced by the Enumerator cannot be used in STL algorithms because the underlying enumerated object is not a collection.
 
 This class used in [Marius Bancila's article](https://www.codeproject.com/Articles/835025/Enabling-MFC-Collections-to-Work-in-Range-based-fo) is used as a reference.
 
@@ -53,7 +53,7 @@ inline CStringArrayIterator end(CStringArray& collection)
 }
 ```
 
-C++ Range for loop calls the `begin()` and `end()` behind the scene to get the beginning and ending iterators.
+C++ Range for loop calls the `begin()` and `end()` behind the scene to get the beginning and ending iterators. For its simplicity, only `EnumFolder` is explained here. Other Enumerator class involving registry and WMI requires a deep understanding of their workings.
 
 `EnumFolder` class is implemented in this way with `FindFirstFile`, `FindNextFile` and `FindClose`.
 
@@ -150,7 +150,7 @@ inline EnumFolderIterator end(EnumFolder& collection)
 }
 ```
 
-The `end()` returns with a `EnumFolderIterator` with index of -1 because we do not know the actual file count from WinAPI.
+The `begin()` returns with a `EnumFolderIterator` with 0 index while the `end()` gives it an index of -1 because the actual file count is not provided by WinAPI.
 
 ## Enumerate Folder Example
 
