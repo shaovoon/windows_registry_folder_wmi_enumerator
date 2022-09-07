@@ -1,6 +1,181 @@
 # Windows Registry Folder and WMI Query Enumerator
 Use C++11 range for-loop to enumerate registry keys/values, folder and WMI queries based on Marius Bancila's article: [Enabling MFC Collections to Work in Range-based for Loops](https://www.codeproject.com/Articles/835025/Enabling-MFC-Collections-to-Work-in-Range-based-fo). Marius enables range-based for-loop for MFC collections whereas this library applies his concept to non-collections to enumerate registry, folder and WMI queries with RAII. This is a header-only library.
 
+__Pros__
+* Resource management is accomplished with RAII: handles and resource are released in the Enumerator's destructor
+* The Windows API usage details is abstracted away from the user.
+* Less boilerplate code to be written and just focus on your business logic
+
+__Cons__
+* Iterators produced by the Enumerator cannot be used in STL algorithms because the underlying enumerated object is not a collection
+
+This class used in [Marius Bancila's article](https://www.codeproject.com/Articles/835025/Enabling-MFC-Collections-to-Work-in-Range-based-fo) is used as a reference.
+
+```Cpp
+class CStringArrayIterator
+{
+public:
+   CStringArrayIterator(CStringArray& collection, INT_PTR const index):
+      m_index(index),
+      m_collection(collection)
+   {
+   }
+
+   bool operator!= (CStringArrayIterator const & other) const
+   {
+      return m_index != other.m_index;
+   }
+
+   CString& operator* () const
+   {
+      return m_collection[m_index];
+   }
+
+   CStringArrayIterator const & operator++ ()
+   {
+      ++m_index;
+      return *this;
+   }
+
+private:
+   INT_PTR        m_index;
+   CStringArray&  m_collection;
+};
+
+inline CStringArrayIterator begin(CStringArray& collection)
+{
+   return CStringArrayIterator(collection, 0);
+}
+
+inline CStringArrayIterator end(CStringArray& collection)
+{
+   return CStringArrayIterator(collection, collection.GetCount());
+}
+```
+
+C++ Range for loop calls the `begin()` and `end()` behind the scene to get the beginning and ending iterators.
+
+`EnumFolder` class is implemented in this way with `FindFirstFile`, `FindNextFile` and `FindClose`.
+
+```Cpp
+class EnumFolder
+{
+public:
+    EnumFolder(const std::wstring& folder)
+        : m_Folder(folder)
+        , m_hFind(INVALID_HANDLE_VALUE)
+    {
+        m_Folder += L"\\*";
+        ::ZeroMemory(&m_Ffd, sizeof(m_Ffd));
+    }
+    ~EnumFolder()
+    {
+        if (m_hFind != INVALID_HANDLE_VALUE)
+            FindClose(m_hFind);
+
+        m_hFind = INVALID_HANDLE_VALUE;
+    }
+    bool Init()
+    {
+        m_hFind = FindFirstFile(m_Folder.c_str(), &m_Ffd);
+        return m_hFind != INVALID_HANDLE_VALUE;
+    }
+    bool Next()
+    {
+        return FindNextFile(m_hFind, &m_Ffd) != 0;
+    }
+    const WIN32_FIND_DATA& GetFFD() const
+    {
+        return m_Ffd;
+    }
+private:
+    std::wstring m_Folder;
+    HANDLE m_hFind;
+    WIN32_FIND_DATA m_Ffd;
+};
+```
+
+While its iterator class, `EnumFolderIterator`, is implemented in this way.
+
+```Cpp
+class EnumFolderIterator
+{
+public:
+    EnumFolderIterator(EnumFolder& collection, INT_PTR const index) :
+        m_Index(index),
+        m_Collection(collection)
+    {
+        if (index == 0)
+        {
+            if(!m_Collection.Init())
+                m_Index = -1;
+        }
+    }
+
+    bool operator!= (EnumFolderIterator const& other) const
+    {
+        return m_Index != other.m_Index;
+    }
+
+    const WIN32_FIND_DATA& operator* () const
+    {
+        return m_Collection.GetFFD();
+    }
+
+    EnumFolderIterator const& operator++ ()
+    {
+        if (m_Index != -1)
+        {
+            if (m_Collection.Next())
+                ++m_Index;
+            else
+                m_Index = -1;
+        }
+        return *this;
+    }
+
+private:
+    INT_PTR        m_Index;
+    EnumFolder& m_Collection;
+};
+
+inline EnumFolderIterator begin(EnumFolder& collection)
+{
+    return EnumFolderIterator(collection, 0);
+}
+
+inline EnumFolderIterator end(EnumFolder& collection)
+{
+    return EnumFolderIterator(collection, -1);
+}
+```
+
+The `end()` returns with a `EnumFolderIterator` with index of -1 because we do not know the actual file count from WinAPI.
+
+## Enumerate Folder Example
+
+[MSDN Example of Folder Enumeration](https://docs.microsoft.com/en-us/windows/win32/fileio/listing-the-files-in-a-directory)
+
+```Cpp
+#include "EnumFolder.h"
+
+EnumFolder enumFolder(L"c:\\temp");
+for (auto const& ffd : enumFolder)
+{
+    if (IsFolder(ffd))
+    {
+        std::wcout << L"  " << ffd.cFileName << "   <DIR>\n";
+    }
+    else
+    {
+        LARGE_INTEGER filesize;
+        filesize.LowPart = ffd.nFileSizeLow;
+        filesize.HighPart = ffd.nFileSizeHigh;
+        std::wcout << L"  " << ffd.cFileName << "   " << filesize.QuadPart << L" bytes\n";
+    }
+}
+```
+
 ## Enumerate Registry Keys Example
 
 [MSDN Example of Registry Enumeration](https://docs.microsoft.com/en-us/windows/win32/sysinfo/enumerating-registry-subkeys)
@@ -23,29 +198,6 @@ EnumRegistryValue enumRegistryValue(HKEY_CURRENT_USER, L"Software\\7-Zip\\Compre
 for (auto const& szValueName : enumRegistryValue)
 {
     std::wcout << szValueName << L"\n";
-}
-```
-## Enumerate Folder Example
-
-[MSDN Example of Folder Enumeration](https://docs.microsoft.com/en-us/windows/win32/fileio/listing-the-files-in-a-directory)
-
-```Cpp
-#include "EnumFolder.h"
-
-EnumFolder enumFolder(L"c:\\temp");
-for (auto const& ffd : enumFolder)
-{
-    if (IsFolder(ffd))
-    {
-        std::wcout << L"  " << ffd.cFileName << "   <DIR>\n";
-    }
-    else
-    {
-        LARGE_INTEGER filesize;
-        filesize.LowPart = ffd.nFileSizeLow;
-        filesize.HighPart = ffd.nFileSizeHigh;
-        std::wcout << L"  " << ffd.cFileName << "   " << filesize.QuadPart << L" bytes\n";
-    }
 }
 ```
 ## Enumerate WMI Example
