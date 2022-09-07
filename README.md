@@ -9,7 +9,7 @@ __Pros__
 __Cons__
 * Iterators produced by the Enumerator cannot be used in STL algorithms because the underlying enumerated object is not a collection.
 
-This class used in [Marius Bancila's article](https://www.codeproject.com/Articles/835025/Enabling-MFC-Collections-to-Work-in-Range-based-fo) is used as a reference.
+The iterator class for MFC `CStringArray` featured in [Marius Bancila's article](https://www.codeproject.com/Articles/835025/Enabling-MFC-Collections-to-Work-in-Range-based-fo) is used as a reference to enable for use in C++11 range for-loop.
 
 ```Cpp
 class CStringArrayIterator
