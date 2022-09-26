@@ -1,5 +1,5 @@
 # Windows Registry Folder and WMI Query Enumerator
-Use C++11 range for-loop to enumerate Windows registry keys/values, folder and WMI queries based on Marius Bancila's article: [Enabling MFC Collections to Work in Range-based for Loops](https://www.codeproject.com/Articles/835025/Enabling-MFC-Collections-to-Work-in-Range-based-fo). Marius enables range-based for-loop for MFC collections whereas this library applies his concept to non-collections to enumerate registry, folder and WMI queries with RAII. This is a header-only library.
+Use C++11 range for-loop to enumerate Windows registry keys/values, folder and Windows Management Instrumentation (WMI) queries based on Marius Bancila's article: [Enabling MFC Collections to Work in Range-based for Loops](https://www.codeproject.com/Articles/835025/Enabling-MFC-Collections-to-Work-in-Range-based-fo). Marius enables range-based for-loop for MFC collections whereas this library applies his concept to non-collections to enumerate registry, folder and WMI queries with RAII. This is a header-only library.
 
 __Pros__
 * Resource management is accomplished with RAII: handles and resource are released in the Enumerator's destructor.
@@ -9,7 +9,77 @@ __Pros__
 __Cons__
 * Iterators produced by the Enumerator cannot be used in STL algorithms because the underlying enumerated object is not a collection.
 
-The iterator class for MFC `CStringArray` featured in [Marius Bancila's article](https://www.codeproject.com/Articles/835025/Enabling-MFC-Collections-to-Work-in-Range-based-fo) is used as a reference to enable for use in C++11 range for-loop.
+## Enumerate Folder Example
+
+`EnumFolder` class took [MSDN Example of Raw Win32 API Folder Enumeration](https://docs.microsoft.com/en-us/windows/win32/fileio/listing-the-files-in-a-directory) to enumerate folder and is a thin wrapper over that example. `EnumFolder` implementation is shown in the later section.
+
+```Cpp
+#include "EnumFolder.h"
+
+EnumFolder enumFolder(L"c:\\temp");
+for (auto const& ffd : enumFolder)
+{
+    if (IsFolder(ffd))
+    {
+        std::wcout << L"  " << ffd.cFileName << "   <DIR>\n";
+    }
+    else
+    {
+        LARGE_INTEGER filesize;
+        filesize.LowPart = ffd.nFileSizeLow;
+        filesize.HighPart = ffd.nFileSizeHigh;
+        std::wcout << L"  " << ffd.cFileName << "   " << filesize.QuadPart << L" bytes\n";
+    }
+}
+```
+
+## Enumerate Registry Keys Example
+
+[MSDN Example of Registry Enumeration](https://docs.microsoft.com/en-us/windows/win32/sysinfo/enumerating-registry-subkeys)
+
+```Cpp
+#include "EnumRegistryKey.h"
+
+EnumRegistryKey enumRegistryKey(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft");
+for (auto const& szKey : enumRegistryKey)
+{
+    std::wcout << szKey << L"\n";
+}
+```
+## Enumerate Registry Values Example
+
+```Cpp
+#include "EnumRegistryValue.h"
+
+EnumRegistryValue enumRegistryValue(HKEY_CURRENT_USER, L"Software\\7-Zip\\Compression");
+for (auto const& szValueName : enumRegistryValue)
+{
+    std::wcout << szValueName << L"\n";
+}
+```
+## Enumerate WMI Example
+```Cpp
+#include "EnumWmi.h"
+
+if (!InitializeCOM())
+{
+    std::cerr << "InitializeCOM() fails! Program exits.\n";
+    return 1;
+}
+{
+    EnumWmi enumWmi(L"SELECT * FROM Win32_Process");
+    for (const auto& process : enumWmi)
+    {
+        _bstr_t str = process[L"Name"].bstrVal;
+        std::cout << "Program name: " << str << std::endl;
+    }
+}
+CoUninitialize();
+```
+
+## How EnumFolder class is implemented
+
+For its simplicity, only `EnumFolder` class is explained here. Other Enumerator class involving registry and WMI requires a deep understanding of their workings. We used the iterator class for MFC `CStringArray` featured in [Marius Bancila's article](https://www.codeproject.com/Articles/835025/Enabling-MFC-Collections-to-Work-in-Range-based-fo) is used as a reference to enable for C++11 range for-loop.
 
 ```Cpp
 class CStringArrayIterator
@@ -53,7 +123,7 @@ inline CStringArrayIterator end(CStringArray& collection)
 }
 ```
 
-C++ Range for loop calls the `begin()` and `end()` behind the scene to get the beginning and ending iterators. For its simplicity, only `EnumFolder` is explained here. Other Enumerator class involving registry and WMI requires a deep understanding of their workings.
+C++ Range for loop calls the `begin()` and `end()` behind the scene to get the beginning and ending iterators. 
 
 `EnumFolder` class is implemented in this way with `FindFirstFile`, `FindNextFile` and `FindClose`.
 
@@ -151,71 +221,3 @@ inline EnumFolderIterator end(EnumFolder& collection)
 ```
 
 The `begin()` returns with a `EnumFolderIterator` with 0 index while the `end()` gives it an index of -1 because the actual file count is not provided by WinAPI.
-
-## Enumerate Folder Example
-
-[MSDN Example of Folder Enumeration](https://docs.microsoft.com/en-us/windows/win32/fileio/listing-the-files-in-a-directory)
-
-```Cpp
-#include "EnumFolder.h"
-
-EnumFolder enumFolder(L"c:\\temp");
-for (auto const& ffd : enumFolder)
-{
-    if (IsFolder(ffd))
-    {
-        std::wcout << L"  " << ffd.cFileName << "   <DIR>\n";
-    }
-    else
-    {
-        LARGE_INTEGER filesize;
-        filesize.LowPart = ffd.nFileSizeLow;
-        filesize.HighPart = ffd.nFileSizeHigh;
-        std::wcout << L"  " << ffd.cFileName << "   " << filesize.QuadPart << L" bytes\n";
-    }
-}
-```
-
-## Enumerate Registry Keys Example
-
-[MSDN Example of Registry Enumeration](https://docs.microsoft.com/en-us/windows/win32/sysinfo/enumerating-registry-subkeys)
-
-```Cpp
-#include "EnumRegistryKey.h"
-
-EnumRegistryKey enumRegistryKey(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft");
-for (auto const& szKey : enumRegistryKey)
-{
-    std::wcout << szKey << L"\n";
-}
-```
-## Enumerate Registry Values Example
-
-```Cpp
-#include "EnumRegistryValue.h"
-
-EnumRegistryValue enumRegistryValue(HKEY_CURRENT_USER, L"Software\\7-Zip\\Compression");
-for (auto const& szValueName : enumRegistryValue)
-{
-    std::wcout << szValueName << L"\n";
-}
-```
-## Enumerate WMI Example
-```Cpp
-#include "EnumWmi.h"
-
-if (!InitializeCOM())
-{
-    std::cerr << "InitializeCOM() fails! Program exits.\n";
-    return 1;
-}
-{
-    EnumWmi enumWmi(L"SELECT * FROM Win32_Process");
-    for (const auto& process : enumWmi)
-    {
-        _bstr_t str = process[L"Name"].bstrVal;
-        std::cout << "Program name: " << str << std::endl;
-    }
-}
-CoUninitialize();
-```
