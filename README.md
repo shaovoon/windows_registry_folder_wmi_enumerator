@@ -1,5 +1,5 @@
 # Windows Registry Folder and WMI Query Enumerator
-Use C++11 range for-loop to enumerate Windows registry keys/values, folder and Windows Management Instrumentation (WMI) queries based on Marius Bancila's article: [Enabling MFC Collections to Work in Range-based for Loops](https://www.codeproject.com/Articles/835025/Enabling-MFC-Collections-to-Work-in-Range-based-fo). Marius enables range-based for-loop for MFC collections whereas this library applies his concept to non-collections to enumerate registry, folder and WMI queries with RAII. This is a header-only library.
+Wouldn't it be nice if we can use C++11 range for-loop to enumerate Windows registry keys/values, folder and Windows Management Instrumentation (WMI) queries without the boilerplate initialization code or knowing how the underlying Win32 API. This library does just that based on Marius Bancila's article: [Enabling MFC Collections to Work in Range-based for Loops](https://www.codeproject.com/Articles/835025/Enabling-MFC-Collections-to-Work-in-Range-based-fo). Marius enables range-based for-loop for MFC collections whereas this library applies his concept to non-collections to like registry, files in a folder and WMI queries. This is a header-only library.
 
 __Pros__
 * Resource management is accomplished with RAII: handles and resource are released in the Enumerator's destructor.
@@ -36,7 +36,7 @@ for (auto const& ffd : enumFolder)
 
 ## Enumerate Registry Keys Example
 
-[MSDN Example of Registry Enumeration](https://docs.microsoft.com/en-us/windows/win32/sysinfo/enumerating-registry-subkeys)
+Comparing with [MSDN Example of Raw Win32 Registry Enumeration](https://docs.microsoft.com/en-us/windows/win32/sysinfo/enumerating-registry-subkeys) with this concise example below, developer is saved from writing that many lines of boilerplate code.
 
 ```Cpp
 #include "EnumRegistryKey.h"
@@ -49,6 +49,8 @@ for (auto const& szKey : enumRegistryKey)
 ```
 ## Enumerate Registry Values Example
 
+This is the example of enumerate registry values with ranged for-loop.
+
 ```Cpp
 #include "EnumRegistryValue.h"
 
@@ -59,6 +61,9 @@ for (auto const& szValueName : enumRegistryValue)
 }
 ```
 ## Enumerate WMI Example
+
+This is the example of enumerating results of WMI query of processes running in the system with ranged for-loop. You can try changing the SQL query and see what results it returns.
+
 ```Cpp
 #include "EnumWmi.h"
 
@@ -221,4 +226,4 @@ inline EnumFolderIterator end(EnumFolder& collection)
 }
 ```
 
-The `begin()` returns with a `EnumFolderIterator` with 0 index while the `end()` gives it an index of -1 because the actual file count is not provided by WinAPI.
+The `begin()` returns with a `EnumFolderIterator` with 0 index while the `end()` gives it an index of -1 because the actual file count is not provided by WinAPI. This concludes our explanation of the `EnumFolder` design.
