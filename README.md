@@ -8,7 +8,7 @@ __Pros__
 
 __Cons__
 * Iterators produced by the Enumerator cannot be used in STL algorithms because the underlying enumerated object is not a collection.
-* Enumeration done with asynchronous callbacks like [EnumWindows](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-enumwindows) cannot be refactored into range for-loop iterators
+* This cannot be applied to enumeration done with asynchronous callbacks like [EnumWindows](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-enumwindows) because callbacks cannot be refactored into range for-loop iterators.
 
 ## Enumerate Folder Example
 
