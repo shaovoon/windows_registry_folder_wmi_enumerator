@@ -85,7 +85,7 @@ CoUninitialize();
 
 ## How EnumFolder class is implemented
 
-For its simplicity, only `EnumFolder` class is explained here. Other Enumerator class involving registry and WMI requires a deep understanding of their workings. We used the iterator class for MFC `CStringArray` featured in [Marius Bancila's article](https://www.codeproject.com/Articles/835025/Enabling-MFC-Collections-to-Work-in-Range-based-fo) is used as a reference to enable for C++11 range for-loop.
+To enable C++11 range for-loop, basically 2 class needs to written: the enumerator class that acts as a _'collection'_ class and an iterator class that iterates over the _'collection'_. For its simplicity, only `EnumFolder` class is explained here. Other Enumerator class involving registry and WMI requires a deep understanding of their workings. We used the iterator class for MFC `CStringArray` featured in [Marius Bancila's article](https://www.codeproject.com/Articles/835025/Enabling-MFC-Collections-to-Work-in-Range-based-fo) is used as a reference to enable for C++11 range for-loop.
 
 ```Cpp
 class CStringArrayIterator
