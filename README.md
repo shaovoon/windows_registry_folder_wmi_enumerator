@@ -226,4 +226,4 @@ inline EnumFolderIterator end(EnumFolder& collection)
 }
 ```
 
-The `begin()` returns with a `EnumFolderIterator` with 0 index while the `end()` gives it an index of -1 because the actual file count is not provided by WinAPI. This concludes our explanation of the `EnumFolder` design.
+The `begin()` returns with a `EnumFolderIterator` with 0 index while the `end()` gives it an index of -1 because the actual file count is not provided by WinAPI. This concludes our explanation of the design of the `EnumFolder` and its `iterator`.
