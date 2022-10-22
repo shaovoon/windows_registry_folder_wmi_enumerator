@@ -15,10 +15,7 @@ int main(int argc, char* argv[])
         }
         else
         {
-            LARGE_INTEGER filesize;
-            filesize.LowPart = ffd.nFileSizeLow;
-            filesize.HighPart = ffd.nFileSizeHigh;
-			std::wcout << L"  " << ffd.cFileName << "   " << filesize.QuadPart << L" bytes\n";
+			std::wcout << L"  " << ffd.cFileName << "   " << GetFileSize(ffd) << L" bytes\n";
         }
     }
     return 0;

@@ -13,6 +13,15 @@ inline bool IsFolder(const WIN32_FIND_DATA& ffd)
     return (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) > 0;
 }
 
+inline LONGLONG GetFileSize(const WIN32_FIND_DATA& ffd)
+{
+	LARGE_INTEGER filesize;
+	filesize.LowPart = ffd.nFileSizeLow;
+	filesize.HighPart = ffd.nFileSizeHigh;
+
+    return filesize.QuadPart;
+}
+
 class EnumFolder
 {
 public:
