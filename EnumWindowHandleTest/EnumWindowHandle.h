@@ -6,7 +6,20 @@
 
 #pragma once
 #include <vector>
+#include <string>
 #include <Windows.h>
+
+inline std::wstring GetWindowTitle(HWND hwnd)
+{
+	const size_t len = static_cast<size_t>(::GetWindowTextLengthW(hwnd));
+	if (len > 0)
+	{
+		std::wstring title(len + 1, L'\0');
+		::GetWindowTextW(hwnd, &title[0], len + 1);
+		return title;
+	}
+	return {};
+}
 
 struct EnumWindowHandleResults
 {
@@ -17,7 +30,7 @@ struct EnumWindowHandleResults
 	std::vector<HWND> m_Windows;
 };
 
-BOOL CALLBACK EnumWindowsProc(
+inline BOOL CALLBACK EnumWindowsProc(
 	_In_ HWND   hwnd,
 	_In_ LPARAM lParam
 )
