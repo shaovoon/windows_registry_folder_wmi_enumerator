@@ -26,10 +26,7 @@ for (auto const& ffd : enumFolder)
     }
     else
     {
-        LARGE_INTEGER filesize;
-        filesize.LowPart = ffd.nFileSizeLow;
-        filesize.HighPart = ffd.nFileSizeHigh;
-        std::wcout << L"  " << ffd.cFileName << "   " << filesize.QuadPart << L" bytes\n";
+        std::wcout << L"  " << ffd.cFileName << "   " << GetFileSize(ffd) << L" bytes\n";
     }
 }
 ```
@@ -81,6 +78,24 @@ if (!InitializeCOM())
     }
 }
 CoUninitialize();
+```
+
+## Enumerate Topmost Window Handle Example
+
+This is the example of enumerating topmost Window on the desktop. It accomplish this task by saving all the HWNDs in a vector during the callback.
+
+```Cpp
+#include "EnumWindowHandle.h"
+
+EnumWindowHandle enumWindowHandle;
+for (HWND hwnd : enumWindowHandle.GetResults())
+{
+    std::wstring title = GetWindowTitle(hwnd);
+    if (!title.empty())
+    {
+        std::wcout << L"Windows title: " << title << "\n";
+    }
+}
 ```
 
 ## How EnumFolder class is implemented
