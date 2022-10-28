@@ -15,7 +15,7 @@ int main(int argc, char* argv[])
         }
         else
         {
-			std::wcout << L"  " << ffd.cFileName << "   " << GetFileSize(ffd) << L" bytes\n";
+            std::wcout << L"  " << ffd.cFileName << "   " << GetFileSize(ffd) << L" bytes\n";
         }
     }
     return 0;
